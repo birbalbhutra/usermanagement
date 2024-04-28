@@ -19,7 +19,7 @@ import static org.springframework.security.config.Customizer.withDefaults;
 /**
  * User details are verified and access is given
  * BCryptPasswordEncoder is used for hashing the password
- * /signup endpoint is open for all, so that new users can be created
+ * /signup, /login endpoints are open for all, so that new users can be created and logged in
  * Rest all endpoints are secured
  */
 @Configuration
@@ -39,7 +39,7 @@ public class SecurityConfig {
         log.info("Inside Security Filter Chain");
         http.csrf().disable()
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/signup").permitAll()
+                        .requestMatchers("/signup", "/login").permitAll()
                         .anyRequest().authenticated()
                 )
                 .httpBasic(withDefaults());

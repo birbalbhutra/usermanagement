@@ -11,6 +11,7 @@ import jakarta.validation.Valid;
 import org.modelmapper.ModelMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -42,14 +43,18 @@ public class UserServiceImpl implements UserService{
     @Override
     public void userLogin(@Valid LoginDto loginDto) {
         log.info("Login User");
-
         Optional<User> existingUser = Optional.ofNullable(userRepository.findByEmail(loginDto.getEmail()));
 
-        if(existingUser.get() == null) {
-            throw new UserAlreadyExistsException(AppConstants.EXCEPTION_USER_DONT_EXIST);
+        if(!existingUser.isPresent()) {
+            throw new BadCredentialsException(AppConstants.BAD_CREDENTIALS);
         }
 
         User user = existingUser.get();
+        String rawPassword = loginDto.getPassword();
+        String encodedPassword = user.getPassword();
+        if(!passwordEncoder.matches(rawPassword, encodedPassword)){
+            throw new BadCredentialsException(AppConstants.BAD_CREDENTIALS);
+        }
         user.setLastLogin(LocalDate.now());
         userRepository.save(user);
     }
